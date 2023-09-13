@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <title>upload</title>
+  </head>
+  <body>
+
+
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="./index.html">사과마켓</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Link</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Dropdown
+              </a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">Action</a></li>
+                <li><a class="dropdown-item" href="#">Another action</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#">Something else here</a></li>
+              </ul>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link disabled" aria-disabled="true">Disabled</a>
+            </li>
+          </ul>
+          <form class="d-flex" role="search">
+            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success" type="submit">Search</button>
+          </form>
+        </div>
+      </div>
+    </nav>
+    
+
+
+    <div class="container mt-3">
+        <input type="text" class="form-control mt-2" id="title" placeholder="title">
+        <textarea class="form-control mt-2" id="content">content</textarea>
+        <input type="text" class="form-control mt-2" id="price" placeholder="price">
+        <input class="form-control mt-2" type="file" id="image">
+        <button class="btn btn-danger mt-3" id="send">올리기</button>
+    </div>
+
+
+
+
+
+    <!-- 파이어 베이스에서 사용할 리소스 가져오기-->
+    <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-firestore.js">//nosql 사용</script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-storage.js"></script>
+
+    <!--내 계정의 프로젝트를 가져오기-->
+    <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyAMKxP8fd_YW75MzaYRBnIeSWSilbiKD68",
+      authDomain: "web-project-f4346.firebaseapp.com",
+      projectId: "web-project-f4346",
+      storageBucket: "web-project-f4346.appspot.com",
+      messagingSenderId: "466291916192",
+      appId: "1:466291916192:web:d198117fd2e3a55c0478c5"
+      };
+      firebase.initializeApp(firebaseConfig);
+
+      // 이 아래부터 코드를 작성하면 된다.
+      // 컬렉션은 폴더, 문서는 파일, 파일안에 오브젝트 형식으로 저장된다. 
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    
+
+    <script>
+        const db = firebase.firestore();
+        const strg = firebase.storage();
+
+        db.collection('product').get().then((결과)=>{
+            결과.forEach((doc)=>{
+                console.log(doc.data())
+            })
+        })
+
+        var 뺀거 = localStorage.getItem('user')
+      
+        $('#username').html(JSON.parse(뺀거).displayName)
+
+      // 로그인 상태가 변할 때마다 실행 됨
+        firebase.auth().onAuthStateChanged((user)=>{
+            if(user){ // 유저의 상태를 계속 띄워줌
+                console.log(user.uid);
+                console.log(user.displayName);
+                $('#username').html(user.displayName);
+                // 로컬 스토리지에 저장하는 코드
+                localStorage.setItem("user", JSON.stringify(user))  // 오브젝트를 문자로 변경함
+            }else
+                console.log("유저 없음")// 없으면 버튼 숨기기 등등 응용 가능
+        })
+
+        //db.collection('product').doc('상품3').set({제목 : "변기"})  // 이름을 지정하고 저장
+        //db.collection('product').add({제목 : "티비"})  // 이름은 무작위로 지정되고 저장 
+        
+        $('#send').click(function(){
+
+            var file = document.querySelector('#image').files[0] // 웹 사이트에 올린 파일을 찾는 방법
+
+            // 이미지 저장 코드
+            var storageRef = strg.ref();
+            var 저장할경로 = storageRef.child('image/' + file.name); 
+            var 업로드작업 = 저장할경로.put(file); // 파일 저장 코드
+
+            // 업로드 작업 중 변화가 생겼을 때 코드 실행 가능
+            업로드작업.on( 'state_changed', 
+                // 변화시 동작하는 함수 
+                null, // 업로드 도중 %를 보여주고 싶을 때
+                //에러시 동작하는 함수
+                (error) => {
+                console.error('실패사유는', error);
+                }, 
+                // 성공시 동작하는 함수
+                () => { // 업로드 종료 후 img의 url을 가져오는 코드
+                업로드작업.snapshot.ref.getDownloadURL().then((url) => {
+                    console.log('업로드된 경로는', url);
+
+                    // 데이터 베이스 저장 코드
+                    var 저장할거 ={제목 : $('#title').val(),
+                                            내용 : $('#content').val(),
+                                            가격 : $('#price').val(),
+                                            날짜 : new Date(),
+                                            이미지 : url,
+                                            uid : JSON.parse(localStorage.getItem('user')).uid,
+                                            닉네임 : JSON.parse(localStorage.getItem('user')).displayName}
+                    // 저장 실행
+                    db.collection('product').add(저장할거).then((result)=>{  
+                        console.log(result)
+                        window.location.href = './index.html' // 저장 성공 시 실행 내용
+                    }).catch((err)=>{
+                        console.log(err)        // 저장 실패 시 실행 내용
+                    })
+                })
+                });
+                }
+            );
+
+            
+            // 로그인 한 사람만 업로드 가능하게 하고 싶으면 이렇게
+        /*rules_version = '2';
+
+        service cloud.firestore {
+        match /databases/{database}/documents {
+            match /{document=**} {
+            allow read : if true 
+            allow write: if request.auth != null ;
+            allow create, delete (문서 생성, 삭제)
+            }
+        }
+    }*/
+    </script>
+</body>
+</html>
