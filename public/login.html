@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
-    <title>사과마켓</title>
+    <title>로그인</title>
   </head>
   <body>
-    
+  <!--navBar-->
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
         <a class="navbar-brand" href="./index.html">사과마켓</a>
@@ -45,9 +45,9 @@
         </div>
       </div>
     </nav>
-
+  <!--navBar-->
     
-    
+  <!--회원가입 틀-->
     <div class="container mt-3">
         <div class="mb-3">
         <input type="text" class="form-control" placeholder="name" id="name-new">
@@ -60,8 +60,9 @@
         </div>
         <button type="submit" class="btn btn-primary" id="register">가입하기</button>
     </div>
+  <!--회원가입 틀-->
 
-
+  <!--로그인 틀-->
     <div class="container mt-3">
         <div class="mb-3">
         <input type="email" class="form-control" placeholder="email" id="email">
@@ -72,12 +73,7 @@
         <button type="submit" class="btn btn-primary" id="login">로그인하기</button>
         <button type="submit" class="btn btn-primary" id="logout">로그아웃하기</button>
     </div>
-
-
-
-
-
-
+   <!--로그인 틀-->
 
     <!-- 파이어 베이스에서 사용할 리소스 가져오기-->
     <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
@@ -102,34 +98,14 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    
-    
-    
+
     <script>
       const db = firebase.firestore()
       const strg = firebase.storage()
 
-        // local 스토리지 : 브라우저 꺼도 남아있음
-        // session 스토리지 : 브라우저 끄면 날라감
-        // indexed DB : 여기에 유저 정보들이 다 저장되어있음 (토큰 저장소)
-
-      var 뺀거 = localStorage.getItem('user')
-      
-        $('#username').html(JSON.parse(뺀거).displayName)
-
-      // 로그인 상태가 변할 때마다 실행 됨
-        firebase.auth().onAuthStateChanged((user)=>{
-            if(user){ // 유저의 상태를 계속 띄워줌
-                console.log(user.uid);
-                console.log(user.displayName);
-                $('#username').html(user.displayName);
-                // 로컬 스토리지에 저장하는 코드
-                localStorage.setItem("user", JSON.stringify(user))  // 오브젝트를 문자로 변경함
-            }else
-                console.log("유저 없음")// 없으면 버튼 숨기기 등등 응용 가능
-        })
-
+  //-------------------------- 회원가입 버튼 기능------------------------------------------------------------//   
         $('#register').click(function(){
+
             var 이메일 = $("#email-new").val();
             var 비번 = $('#pw-new').val();
             var 유저이름 = $('#name-new').val()
@@ -137,6 +113,11 @@
             // 회원가입 소환술
             firebase.auth().createUserWithEmailAndPassword(이메일, 비번).
             then((result)=>{
+
+              // user collection에 저장하는 코드 
+              var 유저정보 = {name : 유저이름, email : 이메일}
+              db.collection('user').doc(result.user.uid).set(유저정보)
+
                 alert("가입 완료!")
                 console.log(result)
                 console.log(result.user) // 가입한 유저의 정보 출력
@@ -144,7 +125,7 @@
                 // 유저의 이름도 저장 (닉네임)
                 result.user.updateProfile({displayName : 유저이름}).
                 then((result)=>{ // 성공 시
-                    console.log(result)
+                    console.log(result.user.displayName)
                     }).catch((err)=>{ // 실패 시
                         console.log(err)
                     })
@@ -152,7 +133,9 @@
                     console.log(err)
             })
         })
+  //-------------------------- 회원가입 버튼 기능------------------------------------------------------------// 
 
+  //-------------------------- 로그인, 로그아웃 버튼 기능------------------------------------------------------------//      
         // 로그인하는 코드
         $("#login").click(function(){
             var 이메일 = $("#email").val();
@@ -170,16 +153,29 @@
                 alert("로그아웃")
             })
         })
-      
-     
+  //-------------------------- 로그인, 로그아웃 버튼 기능------------------------------------------------------------//  
+  
+  
+   //-------------------------- 현재 로그인 상태 가져오기------------------------------------------------------------//
+        // local 스토리지 : 브라우저 꺼도 남아있음
+        // session 스토리지 : 브라우저 끄면 날라감
+        // indexed DB : 여기에 유저 정보들이 다 저장되어있음 (토큰 저장소)
+        var 뺀거 = localStorage.getItem('user')
+        //$('#username').html(JSON.parse(뺀거).displayName)
+
+      // 로그인 상태가 변할 때마다 실행 됨
+        firebase.auth().onAuthStateChanged((user)=>{
+            if(user){ // 유저의 상태를 계속 띄워줌
+                console.log(user.uid);
+                console.log(user.displayName);
+                $('#username').html(user.displayName);
+                 
+                // 로컬 스토리지에 저장하는 코드
+                localStorage.setItem("user", JSON.stringify(user))  // 오브젝트를 문자로 변경함
+            }else
+                console.log("유저 없음")// 없으면 버튼 숨기기 등등 응용 가능
+        }) // onAuthStateChanged
+  //-------------------------- 현재 로그인 상태 가져오기------------------------------------------------------------//
     </script>
-
-
-
-
-
-    
-  
-  
   </body>
 </html>

@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
-    <title>upload</title>
+    <link rel="stylesheet" href="./css/chat.css">
+    <title>채팅</title>
   </head>
   <body>
-    <!--navBar-->
+   <!--navBar-->
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
         <a class="navbar-brand" href="./index.html">사과마켓</a>
@@ -44,17 +45,35 @@
         </div>
       </div>
     </nav>
-  <!--navBar-->
+ <!--navBar-->
 
-  <!--업로드 내용 틀-->
-    <div class="container mt-3">
-        <input type="text" class="form-control mt-2" id="title" placeholder="title">
-        <textarea class="form-control mt-2" id="content">content</textarea>
-        <input type="text" class="form-control mt-2" id="price" placeholder="price">
-        <input class="form-control mt-2" type="file" id="image">
-        <button class="btn btn-danger mt-3" id="send">올리기</button>
-    </div>
-  <!--업로드 내용 틀-->
+ <!--채팅 틀-->
+    <div class="container p-4 detail">
+        <div class="row">
+        <div class="col-3 p-0">
+            <ul class="list-group chat-list">
+            <!--채팅방 아이디 부분 (왼쪽)-->    
+            <!--채팅방 아이디 부분 (왼쪽)-->    
+            </ul>
+        </div>
+        <div class="col-9 p-0">
+            <div class="chat-room">
+            <ul class="list-group chat-content">
+                <!-- 하나하나가 채팅의 내용-->
+                <li><span class="chat-box">채팅방1 내용</span></li>
+                <li><span class="chat-box">채팅방1 내용</span></li>
+                <li><span class="chat-box mine">채팅방1 내용</span></li>
+                <!-- 하나하나가 채팅의 내용-->
+            </ul>
+            <div class="input-group">
+                <input class="form-control" id="chat-input">
+                <button class="btn btn-secondary" id="send">전송</button>
+            </div>
+            </div>
+        </div>
+        </div>
+    </div> 
+  <!--채팅 틀-->
 
     <!-- 파이어 베이스에서 사용할 리소스 가져오기-->
     <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
@@ -79,72 +98,51 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    
     <script>
-        const db = firebase.firestore();
-        const strg = firebase.storage();
-        var 닉네임 = localStorage.getItem('user')
-        $('#username').html(JSON.parse(닉네임).displayName)
+      const db = firebase.firestore()
+      const storage = firebase.storage()
+      var 내uid = JSON.parse(localStorage.getItem('user')).uid;
+      var 채팅방id;
 
-        //db.collection('product').doc('상품3').set({제목 : "변기"})  // 이름을 지정하고 저장
-        //db.collection('product').add({제목 : "티비"})  // 이름은 무작위로 지정되고 저장 
-        
-    //-------------------------- 저장 버튼을 눌렀을 때------------------------------------------------------------// 
-        $('#send').click(function(){
-            var file = document.querySelector('#image').files[0] // 웹 사이트에 올린 파일을 찾는 방법
-            // 이미지 저장 코드
-            var storageRef = strg.ref();
-            var 저장할경로 = storageRef.child('image/' + file.name); 
-            var 업로드작업 = 저장할경로.put(file); // 파일 저장 코드
+    //-------------------------- 채팅방 목록을 가져와라------------------------------------------------------------//
+        // where("필드", 'in", "['고구마', '돼지감자']")  // or연산
+        // where("어레이", 'array-contains-any", "['고구마', '돼지감자']")  // or연산
+      // 내 uid가 속한 채팅방을 가져와라
+      // where에 쿼리를 넣으면 됨 (필드, 연산자, 값)
+      db.collection('chatroom').where('who', 'array-contains', 내uid).get().then((result)=>{
+        result.forEach((data)=>{
+            console.log(data.data())
+            var 채팅방 = `<li class="list-group-item">
+                                        <h6>상품 : ${data.data().상품명}</h6>
+                                        <h6 class="text-small">${data.id}</h6>
+                                    </li>`
+            $('.chat-list').append(채팅방);
 
-            // 업로드 작업 중 변화가 생겼을 때 코드 실행 가능
-            업로드작업.on( 'state_changed', 
-                // 변화시 동작하는 함수 
-                null, // 업로드 도중 %를 보여주고 싶을 때
-                //에러시 동작하는 함수
-                (error) => {
-                console.error('실패사유는', error);
-                }, 
-                // 성공시 동작하는 함수
-                () => { // 업로드 종료 후 img의 url을 가져오는 코드
-                업로드작업.snapshot.ref.getDownloadURL().then((url) => {
-                    console.log('업로드된 경로는', url);
-                    // 데이터 베이스 저장 코드
-                    var 저장할거 ={제목 : $('#title').val(),
-                                            내용 : $('#content').val(),
-                                            가격 : $('#price').val(),
-                                            날짜 : new Date(),
-                                            이미지 : url,
-                                            uid : JSON.parse(localStorage.getItem('user')).uid,
-                                            닉네임 : JSON.parse(localStorage.getItem('user')).displayName}
-                    // 저장 실행
-                    db.collection('product').add(저장할거).
-                    then((result)=>{  
-                        console.log(result)
-                        window.location.href = './index.html' // 저장 성공 시 실행 내용
-                    }).catch((err)=>{
-                        console.log(err)        // 저장 실패 시 실행 내용
-                    })
-                })
-              });
-            }
-          );
-    //-------------------------- 저장 버튼을 눌렀을 때------------------------------------------------------------//
-            
-            // 로그인 한 사람만 업로드 가능하게 하고 싶으면 이렇게
-        /*rules_version = '2';
+            $('.list-group-item').click(function(){
+            채팅방id = $(this).children('.text-small').text()
+            })
+        })
+    })
+   //-------------------------- 채팅방 목록을 가져와라------------------------------------------------------------//
+  
 
-        service cloud.firestore {
-        match /databases/{database}/documents {
-            match /{document=**} {
-            allow read : if true 
-            allow write: if request.auth != null ;
-            allow create, delete (문서 생성, 삭제)
-            }
+    $("#send").click(function(){
+        var 메시지데이터 = {
+            내용 : $("#chat-input").val(),
+            날짜 : new Date(),
+            보낸사람uid : 내uid
         }
-    }*/
+        console.log(채팅방id)
+        db.collection("chatroom").doc(채팅방id).collection('messages').add({메시지데이터}).
+        then((a)=>{
+            console.log(a);
+        })
+    })
 
-  //-------------------------- 현재 로그인 상태 가져오기------------------------------------------------------------//
+
+  
+
+      //-------------------------- 현재 로그인 상태 가져오기------------------------------------------------------------//
       // 로그인 상태가 변할 때마다 실행 됨
         firebase.auth().onAuthStateChanged((user)=>{
             if(user){ // 유저의 상태를 계속 띄워줌
@@ -156,7 +154,7 @@
             }else
                 console.log("유저 없음")// 없으면 버튼 숨기기 등등 응용 가능
         })
-  //-------------------------- 현재 로그인 상태 가져오기------------------------------------------------------------//
+        //-------------------------- 현재 로그인 상태 가져오기------------------------------------------------------------//
     </script>
-</body>
+  </body>
 </html>

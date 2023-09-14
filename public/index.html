@@ -8,7 +8,7 @@
     <title>사과마켓</title>
   </head>
   <body>
-    
+   <!--navBar-->
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
         <a class="navbar-brand" href="./index.html">사과마켓</a>
@@ -45,18 +45,12 @@
         </div>
       </div>
     </nav>
+ <!--navBar-->
+     <!--content-->
+  <div class="container mt-3"></div>
+     <!--content-->
 
-    
-      <div class="container mt-3"></div>
-
-
-
-
-
-
-
-
-
+     
     <!-- 파이어 베이스에서 사용할 리소스 가져오기-->
     <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-auth.js"></script>
@@ -80,12 +74,10 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    
-    
-    
     <script>
+      //-------------------------- 컨텐츠 가져오기------------------------------------------------------------//
       // 상수로 데이터베이스 저장
-      const db = firebase.firestore()
+      const db = firebase.firestore();
       // 컬렉션에서 뽑아오기      then()은 뭔가 완료가 되었을 때 안에 함수를 실행해 줘
       db.collection('product').get().then((결과)=>{
         console.log(결과)  // 혹시 몰라서 결과도 일단 가져오기
@@ -98,20 +90,28 @@
                                     <h5 class="title"><a href='./detail.html?id=${doc.id}'>${doc.data().제목}</a></h5> 
                                     <p class="date">2030년 1월 8일</p>
                                     <p class="price">${doc.data().가격}</p>
-                                    <p class="float-end">?0</p>
+                                    <p class="float-end">♥</p>
                                   </div>
                                 </div>`
           $('.container').append(templet)  // url창에 상품의 id를 가져와서 디테일 페이지를 다르게 보여줌
         })
       })
+      //-------------------------- 컨텐츠 가져오기------------------------------------------------------------//
+
+
+      //-------------------------- 현재 로그인 상태 가져오기------------------------------------------------------------//
+      // 로그인 상태가 변할 때마다 실행 됨
+        firebase.auth().onAuthStateChanged((user)=>{
+            if(user){ // 유저의 상태를 계속 띄워줌
+                console.log("로그인유저uid : " + user.uid);
+                console.log("로그인된 유저 : " + user.displayName);
+                $('#username').html(user.displayName);
+                // 로컬 스토리지에 저장하는 코드
+                localStorage.setItem("user", JSON.stringify(user))  // 오브젝트를 문자로 변경함
+            }else
+                console.log("유저 없음")// 없으면 버튼 숨기기 등등 응용 가능
+        })
+        //-------------------------- 현재 로그인 상태 가져오기------------------------------------------------------------//
     </script>
-
-
-
-
-
-    
-  
-  
   </body>
 </html>
