@@ -61,7 +61,6 @@
             <ul class="list-group chat-content">
                 <!-- 하나하나가 채팅의 내용-->
                 <li><span class="chat-box">채팅방1 내용</span></li>
-                <li><span class="chat-box">채팅방1 내용</span></li>
                 <li><span class="chat-box mine">채팅방1 내용</span></li>
                 <!-- 하나하나가 채팅의 내용-->
             </ul>
@@ -104,7 +103,7 @@
       var 내uid = JSON.parse(localStorage.getItem('user')).uid;
       var 채팅방id;
 
-    //-------------------------- 채팅방 목록을 가져와라------------------------------------------------------------//
+    //-------------------------- 채팅------------------------------------------------------------//
         // where("필드", 'in", "['고구마', '돼지감자']")  // or연산
         // where("어레이", 'array-contains-any", "['고구마', '돼지감자']")  // or연산
       // 내 uid가 속한 채팅방을 가져와라
@@ -118,14 +117,26 @@
                                     </li>`
             $('.chat-list').append(채팅방);
 
-            $('.list-group-item').click(function(){
+            $('.list-group-item').click(function(e){
             채팅방id = $(this).children('.text-small').text()
+
+            e.stopImmediatePropagation(); // 이벤트 버블링 (상위 요소까지 클릭 되버리는 현상을 막는 함수)
+
+            // DB에서 messages 컬렉션 게시물을 가져와줘 (onsnapshot은 실시간으로!) (orderBy는 시간 순서대로 메시지를 받아오고 싶을 때)
+            db.collection('chatroom').doc(채팅방id).collection('messages').orderBy('날짜').onSnapshot((result)=>{
+              $(".chat-content").html('')  // 지우고 새로운 메시지를 보여줌
+              result.forEach((a)=>{
+                console.log(a.data())
+                var 메시지 = `<li><span class="chat-box">${a.data().내용}</span></li>`;
+                $(".chat-content").append(메시지)
+              })
             })
+          })
         })
     })
-   //-------------------------- 채팅방 목록을 가져와라------------------------------------------------------------//
+   //-------------------------- 채팅------------------------------------------------------------//
   
-
+  //-------------------------- 메시지를 각 채팅방에 저장------------------------------------------------------------//
     $("#send").click(function(){
         var 메시지데이터 = {
             내용 : $("#chat-input").val(),
@@ -133,12 +144,12 @@
             보낸사람uid : 내uid
         }
         console.log(채팅방id)
-        db.collection("chatroom").doc(채팅방id).collection('messages').add({메시지데이터}).
+        db.collection("chatroom").doc(채팅방id).collection('messages').add(메시지데이터).
         then((a)=>{
             console.log(a);
         })
     })
-
+  //-------------------------- 메시지를 각 채팅방에 저장------------------------------------------------------------//
 
   
 
