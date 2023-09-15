@@ -122,7 +122,7 @@
                 console.log(result)
                 console.log(result.user) // 가입한 유저의 정보 출력
 
-                // 유저의 이름도 저장 (닉네임)
+                // 유저의 이름도 저장 (nickname)
                 result.user.updateProfile({displayName : 유저이름}).
                 then((result)=>{ // 성공 시
                     console.log(result.user.displayName)
@@ -168,7 +168,7 @@
             if(user){ // 유저의 상태를 계속 띄워줌
                 console.log(user.uid);
                 console.log(user.displayName);
-                $('#username').html(user.displayName);
+                $('#username').html(JSON.parse(뺀거).displayName)
                  
                 // 로컬 스토리지에 저장하는 코드
                 localStorage.setItem("user", JSON.stringify(user))  // 오브젝트를 문자로 변경함

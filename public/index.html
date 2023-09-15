@@ -12,6 +12,7 @@
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
         <a class="navbar-brand" href="./index.html">사과마켓</a>
+        <span class="ms-auto mx-2" id="username"></span>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -85,11 +86,11 @@
         결과.forEach((doc) => {
           console.log(doc.data()) // data()를 붙여야 데이터만 나옴
           var templet = `<div class="product">
-                                  <div class="thumbnail" style="background-image: url('${doc.data().이미지}')"></div>
+                                  <div class="thumbnail" style="background-image: url('${doc.data().img}')"></div>
                                   <div class="flex-grow-1 p-4">
-                                    <h5 class="title"><a href='./detail.html?id=${doc.id}'>${doc.data().제목}</a></h5> 
+                                    <h5 class="title"><a href='./detail.html?id=${doc.id}'>${doc.data().title}</a></h5> 
                                     <p class="date">2030년 1월 8일</p>
-                                    <p class="price">${doc.data().가격}</p>
+                                    <p class="price">${doc.data().price}</p>
                                     <p class="float-end">♥</p>
                                   </div>
                                 </div>`
@@ -100,18 +101,32 @@
 
 
       //-------------------------- 현재 로그인 상태 가져오기------------------------------------------------------------//
+      // local 스토리지 : 브라우저 꺼도 남아있음
+        // session 스토리지 : 브라우저 끄면 날라감
+        // indexed DB : 여기에 유저 정보들이 다 저장되어있음 (토큰 저장소)
+        var 뺀거 = localStorage.getItem('user')
+        //$('#username').html(JSON.parse(뺀거).displayName)
+
       // 로그인 상태가 변할 때마다 실행 됨
         firebase.auth().onAuthStateChanged((user)=>{
             if(user){ // 유저의 상태를 계속 띄워줌
-                console.log("로그인유저uid : " + user.uid);
-                console.log("로그인된 유저 : " + user.displayName);
-                $('#username').html(user.displayName);
+                console.log(user.uid);
+                console.log(user.displayName);
+                $('#username').html(JSON.parse(뺀거).displayName)
+                 
                 // 로컬 스토리지에 저장하는 코드
                 localStorage.setItem("user", JSON.stringify(user))  // 오브젝트를 문자로 변경함
             }else
                 console.log("유저 없음")// 없으면 버튼 숨기기 등등 응용 가능
-        })
+        }) // onAuthStateChanged
         //-------------------------- 현재 로그인 상태 가져오기------------------------------------------------------------//
+
+
+        // firebase 사이트 발생
+        // 1. 터미널에 firebase projects:list를 입력한다.
+        // 2. 터미널에 firebase use 프로젝트id를 입력한다.
+        // 3. 터미널에 firebase deploy --only hosting을 입력하여 발행한다. (firestore, storage)
+        // https://web-project-f4346.web.app 이렇게 하단에 url이 뜨는데 이게 내 사이트 주소이다. 
     </script>
   </body>
 </html>

@@ -12,6 +12,7 @@
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
         <a class="navbar-brand" href="./index.html">사과마켓</a>
+        <span class="ms-auto mx-2" id="username"></span>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -59,10 +60,10 @@
         <div class="col-9 p-0">
             <div class="chat-room">
             <ul class="list-group chat-content">
-                <!-- 하나하나가 채팅의 내용-->
-                <li><span class="chat-box">채팅방1 내용</span></li>
-                <li><span class="chat-box mine">채팅방1 내용</span></li>
-                <!-- 하나하나가 채팅의 내용-->
+                <!-- 하나하나가 채팅의 content-->
+                <li><span class="chat-box">채팅방1 content</span></li>
+                <li><span class="chat-box mine">채팅방1 content</span></li>
+                <!-- 하나하나가 채팅의 content-->
             </ul>
             <div class="input-group">
                 <input class="form-control" id="chat-input">
@@ -123,11 +124,11 @@
             e.stopImmediatePropagation(); // 이벤트 버블링 (상위 요소까지 클릭 되버리는 현상을 막는 함수)
 
             // DB에서 messages 컬렉션 게시물을 가져와줘 (onsnapshot은 실시간으로!) (orderBy는 시간 순서대로 메시지를 받아오고 싶을 때)
-            db.collection('chatroom').doc(채팅방id).collection('messages').orderBy('날짜').onSnapshot((result)=>{
+            db.collection('chatroom').doc(채팅방id).collection('messages').orderBy('date').onSnapshot((result)=>{
               $(".chat-content").html('')  // 지우고 새로운 메시지를 보여줌
               result.forEach((a)=>{
                 console.log(a.data())
-                var 메시지 = `<li><span class="chat-box">${a.data().내용}</span></li>`;
+                var 메시지 = `<li><span class="chat-box">${a.data().content}</span></li>`;
                 $(".chat-content").append(메시지)
               })
             })
@@ -139,8 +140,8 @@
   //-------------------------- 메시지를 각 채팅방에 저장------------------------------------------------------------//
     $("#send").click(function(){
         var 메시지데이터 = {
-            내용 : $("#chat-input").val(),
-            날짜 : new Date(),
+            content : $("#chat-input").val(),
+            date : new Date(),
             보낸사람uid : 내uid
         }
         console.log(채팅방id)
@@ -154,17 +155,24 @@
   
 
       //-------------------------- 현재 로그인 상태 가져오기------------------------------------------------------------//
+      // local 스토리지 : 브라우저 꺼도 남아있음
+        // session 스토리지 : 브라우저 끄면 날라감
+        // indexed DB : 여기에 유저 정보들이 다 저장되어있음 (토큰 저장소)
+        var 뺀거 = localStorage.getItem('user')
+        //$('#username').html(JSON.parse(뺀거).displayName)
+
       // 로그인 상태가 변할 때마다 실행 됨
         firebase.auth().onAuthStateChanged((user)=>{
             if(user){ // 유저의 상태를 계속 띄워줌
                 console.log(user.uid);
                 console.log(user.displayName);
-                $('#username').html(user.displayName);
+                $('#username').html(JSON.parse(뺀거).displayName)
+                 
                 // 로컬 스토리지에 저장하는 코드
                 localStorage.setItem("user", JSON.stringify(user))  // 오브젝트를 문자로 변경함
             }else
                 console.log("유저 없음")// 없으면 버튼 숨기기 등등 응용 가능
-        })
+        }) // onAuthStateChanged
         //-------------------------- 현재 로그인 상태 가져오기------------------------------------------------------------//
     </script>
   </body>

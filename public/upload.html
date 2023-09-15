@@ -11,6 +11,7 @@
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
         <a class="navbar-brand" href="./index.html">사과마켓</a>
+        <span class="ms-auto mx-2" id="username"></span>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -46,7 +47,7 @@
     </nav>
   <!--navBar-->
 
-  <!--업로드 내용 틀-->
+  <!--업로드 content 틀-->
     <div class="container mt-3">
         <input type="text" class="form-control mt-2" id="title" placeholder="title">
         <textarea class="form-control mt-2" id="content">content</textarea>
@@ -54,7 +55,7 @@
         <input class="form-control mt-2" type="file" id="image">
         <button class="btn btn-danger mt-3" id="send">올리기</button>
     </div>
-  <!--업로드 내용 틀-->
+  <!--업로드 content 틀-->
 
     <!-- 파이어 베이스에서 사용할 리소스 가져오기-->
     <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
@@ -83,16 +84,16 @@
     <script>
         const db = firebase.firestore();
         const strg = firebase.storage();
-        var 닉네임 = localStorage.getItem('user')
-        $('#username').html(JSON.parse(닉네임).displayName)
+        var nickname = localStorage.getItem('user')
+        $('#username').html(JSON.parse(nickname).displayName)
 
-        //db.collection('product').doc('상품3').set({제목 : "변기"})  // 이름을 지정하고 저장
-        //db.collection('product').add({제목 : "티비"})  // 이름은 무작위로 지정되고 저장 
+        //db.collection('product').doc('상품3').set({title : "변기"})  // 이름을 지정하고 저장
+        //db.collection('product').add({title : "티비"})  // 이름은 무작위로 지정되고 저장 
         
     //-------------------------- 저장 버튼을 눌렀을 때------------------------------------------------------------// 
         $('#send').click(function(){
             var file = document.querySelector('#image').files[0] // 웹 사이트에 올린 파일을 찾는 방법
-            // 이미지 저장 코드
+            // img 저장 코드
             var storageRef = strg.ref();
             var 저장할경로 = storageRef.child('image/' + file.name); 
             var 업로드작업 = 저장할경로.put(file); // 파일 저장 코드
@@ -110,20 +111,20 @@
                 업로드작업.snapshot.ref.getDownloadURL().then((url) => {
                     console.log('업로드된 경로는', url);
                     // 데이터 베이스 저장 코드
-                    var 저장할거 ={제목 : $('#title').val(),
-                                            내용 : $('#content').val(),
-                                            가격 : $('#price').val(),
-                                            날짜 : new Date(),
-                                            이미지 : url,
+                    var 저장할거 ={title : $('#title').val(),
+                                            content : $('#content').val(),
+                                            price : parseInt($('#price').val()),
+                                            date : new Date(),
+                                            img : url,
                                             uid : JSON.parse(localStorage.getItem('user')).uid,
-                                            닉네임 : JSON.parse(localStorage.getItem('user')).displayName}
+                                            nickname : JSON.parse(localStorage.getItem('user')).displayName}
                     // 저장 실행
                     db.collection('product').add(저장할거).
                     then((result)=>{  
                         console.log(result)
-                        window.location.href = './index.html' // 저장 성공 시 실행 내용
+                        window.location.href = './index.html' // 저장 성공 시 실행 content
                     }).catch((err)=>{
-                        console.log(err)        // 저장 실패 시 실행 내용
+                        console.log(err)        // 저장 실패 시 실행 content
                     })
                 })
               });
@@ -145,17 +146,24 @@
     }*/
 
   //-------------------------- 현재 로그인 상태 가져오기------------------------------------------------------------//
+     // local 스토리지 : 브라우저 꺼도 남아있음
+        // session 스토리지 : 브라우저 끄면 날라감
+        // indexed DB : 여기에 유저 정보들이 다 저장되어있음 (토큰 저장소)
+        var 뺀거 = localStorage.getItem('user')
+        //$('#username').html(JSON.parse(뺀거).displayName)
+
       // 로그인 상태가 변할 때마다 실행 됨
         firebase.auth().onAuthStateChanged((user)=>{
             if(user){ // 유저의 상태를 계속 띄워줌
                 console.log(user.uid);
                 console.log(user.displayName);
-                $('#username').html(user.displayName);
+                $('#username').html(JSON.parse(뺀거).displayName)
+                 
                 // 로컬 스토리지에 저장하는 코드
                 localStorage.setItem("user", JSON.stringify(user))  // 오브젝트를 문자로 변경함
             }else
                 console.log("유저 없음")// 없으면 버튼 숨기기 등등 응용 가능
-        })
+        }) // onAuthStateChanged
   //-------------------------- 현재 로그인 상태 가져오기------------------------------------------------------------//
     </script>
 </body>
